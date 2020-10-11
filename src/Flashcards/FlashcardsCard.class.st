@@ -55,6 +55,11 @@ FlashcardsCard >> leitnerBox: anObject [
 ]
 
 { #category : #highlighting }
+FlashcardsCard >> printOn: aStream [
+	aStream nextPutAll: self class name; space; nextPutAll: self front printString
+]
+
+{ #category : #highlighting }
 FlashcardsCard >> reverse [
 	isReversed := isReversed not.
 ]
