@@ -3,9 +3,12 @@ Class {
 	#superclass : #Object,
 	#instVars : [
 		'boxes',
-		'random'
+		'random',
+		'boxCumulativeProbabilities',
+		'selectedBoxNumber',
+		'selectedCard'
 	],
-	#category : #Flashcards
+	#category : #'Flashcards-Controllers'
 }
 
 { #category : #'as yet unclassified' }
@@ -30,16 +33,20 @@ FlashcardsLeitnerSystem >> boxes [
 FlashcardsLeitnerSystem >> initialize [ 
 	super initialize.
 	random := Random new.
+	boxes := OrderedCollection new.
+	boxCumulativeProbabilities := Dictionary new.
 ]
 
 { #category : #initialization }
 FlashcardsLeitnerSystem >> initializeProbabilities: aCollectionOfProbabilities [
 	| sum |
+	1 to: aCollectionOfProbabilities size do: [ boxes add: FlashcardBox new ].
+	
 	sum := 0.
 	
-	boxes := aCollectionOfProbabilities withIndexCollect: [ :probability :i |
+	aCollectionOfProbabilities withIndexDo: [ :probability :i |
 		sum := sum + probability.
-		FlashcardsLeitnerBox number: i probability: sum ].
+		boxCumulativeProbabilities at: (boxes at: i) put: sum ].
 ]
 
 { #category : #'as yet unclassified' }
