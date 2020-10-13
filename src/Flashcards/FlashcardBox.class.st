@@ -12,11 +12,6 @@ FlashcardBox >> addCard: aCard [
 	cards add: aCard
 ]
 
-{ #category : #adding }
-FlashcardBox >> addCards: aCollectionOfCards [
-	aCollectionOfCards do: [ :each | self addCard: each ].
-]
-
 { #category : #initialization }
 FlashcardBox >> initialize [ 	
 	super initialize.

@@ -12,21 +12,26 @@ Class {
 }
 
 { #category : #'as yet unclassified' }
+FlashcardsLeitnerSystem class >> defaultProbabilities [
+	^ #(0.5 0.25 0.125 0.05)
+]
+
+{ #category : #'as yet unclassified' }
 FlashcardsLeitnerSystem class >> withProbabilities: aCollectionOfProbabilities [
 	^ self new
 		initializeProbabilities: aCollectionOfProbabilities;
 		yourself
 ]
 
-{ #category : #adding }
+{ #category : #public }
 FlashcardsLeitnerSystem >> addCard: aCard [
+	"The new card always goes into the first box"
 	boxes first addCard: aCard.
-	aCard leitnerBox: boxes first.
 ]
 
 { #category : #accessing }
 FlashcardsLeitnerSystem >> boxes [
-	^boxes
+	^ boxes
 ]
 
 { #category : #initialization }
@@ -35,12 +40,19 @@ FlashcardsLeitnerSystem >> initialize [
 	random := Random new.
 	boxes := OrderedCollection new.
 	boxCumulativeProbabilities := Dictionary new.
+	
+	self initializeDefaultProbabilities.
+]
+
+{ #category : #initialization }
+FlashcardsLeitnerSystem >> initializeDefaultProbabilities [
+	self initializeProbabilities: self class defaultProbabilities.
 ]
 
 { #category : #initialization }
 FlashcardsLeitnerSystem >> initializeProbabilities: aCollectionOfProbabilities [
 	| sum |
-	1 to: aCollectionOfProbabilities size do: [ boxes add: FlashcardBox new ].
+	aCollectionOfProbabilities size timesRepeat: [ boxes add: FlashcardBox new ].
 	
 	sum := 0.
 	
@@ -49,65 +61,69 @@ FlashcardsLeitnerSystem >> initializeProbabilities: aCollectionOfProbabilities [
 		boxCumulativeProbabilities at: (boxes at: i) put: sum ].
 ]
 
-{ #category : #'as yet unclassified' }
-FlashcardsLeitnerSystem >> moveBackward: aCard [
-	| currentBox newBox |
-	currentBox := aCard leitnerBox.
-	newBox := boxes first.
-	
-	currentBox removeCard: aCard.
-	newBox addCard: aCard.
-	aCard leitnerBox: newBox.
+{ #category : #private }
+FlashcardsLeitnerSystem >> moveSelectedCardBackwards [
+	"This happens if the answer was wrong. The card is moved back to the first box"
+	boxes first add: selectedCard.
 ]
 
-{ #category : #'as yet unclassified' }
-FlashcardsLeitnerSystem >> moveForward: aCard [
-	| currentBox newBox |
-	currentBox := aCard leitnerBox.
+{ #category : #private }
+FlashcardsLeitnerSystem >> moveSelectedCardForward [
+	"This happens if the answer is correct. The card should progress to the next box. And if it was already taken from the last box, it is put back into the last box"
+	| nextBoxNumber |
 	
-	currentBox = boxes last
-		ifTrue: [ ^ self ].
-
-	newBox := boxes at: (currentBox number + 1).
+	nextBoxNumber := selectedBoxNumber = boxes size
+		ifTrue: [ selectedBoxNumber ]
+		ifFalse: [ selectedBoxNumber + 1].
 		
-	currentBox removeCard: aCard.
-	newBox addCard: aCard.
-	aCard leitnerBox: newBox
+	(boxes at: selectedBoxNumber) addCard: selectedCard.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : #accessing }
 FlashcardsLeitnerSystem >> numberOfBoxes [
 	^ boxes size
 ]
 
-{ #category : #'as yet unclassified' }
-FlashcardsLeitnerSystem >> processAnswer: anAnswer onCard: aCard [
-	anAnswer = aCard back
-		ifTrue: [ self moveForward: aCard ]
-		ifFalse: [ self moveBackward: aCard ]
+{ #category : #public }
+FlashcardsLeitnerSystem >> processAnswer: anAnswer [
+	"Check the answer and move the card forward if the answer is correct or move it backwards if the answer is wrong"
+	anAnswer = selectedCard translation
+		ifTrue: [ self moveSelectedCardForward ]
+		ifFalse: [ self moveSelectedCardBackwards ]
 ]
 
-{ #category : #'as yet unclassified' }
-FlashcardsLeitnerSystem >> randomBox [
-	| nonemptyBoxes scalingCoefficient sumOfProbabilities randomNumber scaledProbability |
+{ #category : #private }
+FlashcardsLeitnerSystem >> selectRandomBox [
+	| nonemptyBoxes scalingCoefficient sumOfProbabilities randomNumber scaledProbability selectedBox |
 	nonemptyBoxes := boxes reject: [ :box | box isEmpty ].
 	
 	nonemptyBoxes ifEmpty: [
 		Error signal: 'All boxes are empty' ].
 	
-	sumOfProbabilities := nonemptyBoxes inject: 0 into: [ :sum :box | box probability ].
+	sumOfProbabilities := (nonemptyBoxes collect: [ :box | boxCumulativeProbabilities at: box ]) sum.
 	scalingCoefficient := 1 / sumOfProbabilities.
-	sumOfProbabilities := 0.
 	
 	randomNumber := random next.
 	
-	^ nonemptyBoxes detect: [ :box |
-		scaledProbability := box probability * scalingCoefficient.
-		sumOfProbabilities := sumOfProbabilities + scaledProbability.
-		randomNumber <= sumOfProbabilities ]
+	selectedBox := nonemptyBoxes detect: [ :box |
+		scaledProbability := (boxCumulativeProbabilities at: box) * scalingCoefficient.
+		randomNumber <= scaledProbability ].
+	
+	selectedBoxNumber := boxes indexOf: selectedBox.
 ]
 
-{ #category : #'as yet unclassified' }
-FlashcardsLeitnerSystem >> randomCard [
-	^ self randomBox randomCard
+{ #category : #public }
+FlashcardsLeitnerSystem >> selectRandomCard [
+	self selectRandomBox.
+	selectedCard := (boxes at: selectedBoxNumber) takeRandomCard.
+]
+
+{ #category : #accessing }
+FlashcardsLeitnerSystem >> selectedBox [
+	^ boxes at: selectedBoxNumber 
+]
+
+{ #category : #accessing }
+FlashcardsLeitnerSystem >> selectedCard [
+	^ selectedCard
 ]
