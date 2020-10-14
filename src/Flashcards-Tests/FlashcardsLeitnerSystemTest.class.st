@@ -36,21 +36,18 @@ FlashcardsLeitnerSystemTest >> testDefaultProbabilities [
 { #category : #tests }
 FlashcardsLeitnerSystemTest >> testEarlierBoxesMoreProbableToGetPicked [
 
-	| fls card1 card2 card3 results topSelection  box1 box2 box3 |
+	| fls card1 card2 card3 results topSelection |
 	
-	fls := FlashcardsLeitnerSystem new.
+	fls := FlashcardsLeitnerSystem withProbabilities: #(0.7 0.2 0.1).
 	
 	card1 := Flashcard word: 1 translation: 1.
 	card2 := Flashcard word: 2 translation: 2.
 	card3 := Flashcard word: 3 translation: 3.
 		
-	box1 := FlashcardBox new addCard: card1; yourself.
-	box2 := FlashcardBox new addCard: card2; yourself.
-	box3 := FlashcardBox new addCard: card3; yourself.
 		
 	"sneaky way to setup boxes in known state"
-	fls boxes removeAll; addAll: {box1. box2. box3}.
-	fls initializeProbabilities: #(0.5 0.25 0.125).
+	{card1. card2. card3} doWithIndex: [ :item :i |
+		(fls boxes at: i) addCard: item ].
 	
 	results := Bag new.
 	

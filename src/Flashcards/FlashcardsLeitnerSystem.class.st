@@ -38,7 +38,6 @@ FlashcardsLeitnerSystem >> boxes [
 FlashcardsLeitnerSystem >> initialize [ 
 	super initialize.
 	random := Random new.
-	boxes := OrderedCollection new.
 	
 	self initializeDefaultProbabilities.
 ]
@@ -52,6 +51,7 @@ FlashcardsLeitnerSystem >> initializeDefaultProbabilities [
 FlashcardsLeitnerSystem >> initializeProbabilities: aCollectionOfProbabilities [
 	| sum |
 	
+	boxes := OrderedCollection new.
 	aCollectionOfProbabilities size timesRepeat: [ boxes add: FlashcardBox new ].
 	
 	sum := 0.
