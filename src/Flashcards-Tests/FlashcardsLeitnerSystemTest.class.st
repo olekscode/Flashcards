@@ -8,32 +8,25 @@ Class {
 }
 
 { #category : #tests }
-FlashcardsLeitnerSystemTest >> testEarlierBoxesMoreProbableToGetPicked [
+FlashcardsLeitnerSystemTest >> testDefaultProbabilities [
 
-	| fls boxes card1 card2 card3 results stat card4 |
-	fls := FlashcardsLeitnerSystem withProbabilities: #(0.5 0.75 0.9 1) reversed .
-	boxes := fls boxes.
+	| fls results topSelection |
 	
+	fls := FlashcardsLeitnerSystem withProbabilities: #(0.5 0.25 0.125).
 	
-	fls 
-		addCard: (card1 := FlashcardsCard word: 1 translation: 1);
-		addCard: (card2 := FlashcardsCard word: 2 translation: 2);
-		addCard: (card3 := FlashcardsCard word: 3 translation: 3);
-		addCard: (card4 := FlashcardsCard word: 4 translation: 4).
-		
-	fls moveForward: card2.
-	fls moveForward: card3; moveForward: card3.
-	fls moveForward: card4; moveForward: card4; moveForward: card4.
+	1 to: 3 do: [ :i | fls addCard: (Flashcard word: i translation: i) ].
 	
 	results := Bag new.
 	
-	10000 timesRepeat: [ 
-		results add: fls randomCard ].
-
-	stat := results cumulativeCounts first.
+	1000 timesRepeat: [ 
+		results add: fls selectRandomCard.
+		fls processAnswer: 'wrong anser'].
 	
-	"results cumulativeCounts inspect."
-	self assert: stat value equals: card1.
+	topSelection := results sortedCounts first.
+	
+	self assert: topSelection key > 300 description: 'Should be about 1/3 of the values'.
+	self assert: topSelection key < 400 description: 'Should be about 1/3 of the values'.
+	
 	
 		
 	
@@ -41,15 +34,36 @@ FlashcardsLeitnerSystemTest >> testEarlierBoxesMoreProbableToGetPicked [
 ]
 
 { #category : #tests }
-FlashcardsLeitnerSystemTest >> testSuccessiveBoxesHaveMonotonicIncreasingProbabilities [
+FlashcardsLeitnerSystemTest >> testEarlierBoxesMoreProbableToGetPicked [
 
-	| fls boxes |
-	fls := FlashcardsLeitnerSystem withProbabilities: #(0.5 0.25 0.125).
-	boxes := fls boxes.
+	| fls card1 card2 card3 results topSelection  box1 box2 box3 |
 	
+	fls := FlashcardsLeitnerSystem new.
 	
-	self assert: boxes first probability equals: 0.5.
-	self assert: boxes second probability equals: 0.75.
-	self assert: boxes third probability equals: 0.875.
+	card1 := Flashcard word: 1 translation: 1.
+	card2 := Flashcard word: 2 translation: 2.
+	card3 := Flashcard word: 3 translation: 3.
+		
+	box1 := FlashcardBox new addCard: card1; yourself.
+	box2 := FlashcardBox new addCard: card2; yourself.
+	box3 := FlashcardBox new addCard: card3; yourself.
+		
+	"sneaky way to setup boxes in known state"
+	fls boxes removeAll; addAll: {box1. box2. box3}.
+	fls initializeProbabilities: #(0.5 0.25 0.125).
+	
+	results := Bag new.
+	
+	10000 timesRepeat: [ 
+		results add: fls selectRandomCard.
+		fls returnSelectedCard  ].
+
+	topSelection := results cumulativeCounts first.
+	
+	"results cumulativeCounts inspect."
+	self assert: topSelection value equals: card1.
+	
+		
+	
 
 ]

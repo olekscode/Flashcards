@@ -39,7 +39,6 @@ FlashcardsLeitnerSystem >> initialize [
 	super initialize.
 	random := Random new.
 	boxes := OrderedCollection new.
-	boxCumulativeProbabilities := Dictionary new.
 	
 	self initializeDefaultProbabilities.
 ]
@@ -52,9 +51,11 @@ FlashcardsLeitnerSystem >> initializeDefaultProbabilities [
 { #category : #initialization }
 FlashcardsLeitnerSystem >> initializeProbabilities: aCollectionOfProbabilities [
 	| sum |
+	
 	aCollectionOfProbabilities size timesRepeat: [ boxes add: FlashcardBox new ].
 	
 	sum := 0.
+	boxCumulativeProbabilities := Dictionary new.
 	
 	aCollectionOfProbabilities withIndexDo: [ :probability :i |
 		sum := sum + probability.
@@ -64,7 +65,7 @@ FlashcardsLeitnerSystem >> initializeProbabilities: aCollectionOfProbabilities [
 { #category : #private }
 FlashcardsLeitnerSystem >> moveSelectedCardBackwards [
 	"This happens if the answer was wrong. The card is moved back to the first box"
-	boxes first add: selectedCard.
+	boxes first addCard: selectedCard.
 ]
 
 { #category : #private }
@@ -93,6 +94,13 @@ FlashcardsLeitnerSystem >> processAnswer: anAnswer [
 ]
 
 { #category : #private }
+FlashcardsLeitnerSystem >> returnSelectedCard [
+	"Put the selected card back in case you can't answer and want to pause"
+	
+	(boxes at: selectedBoxNumber) addCard: selectedCard.
+]
+
+{ #category : #private }
 FlashcardsLeitnerSystem >> selectRandomBox [
 	| nonemptyBoxes scalingCoefficient sumOfProbabilities randomNumber scaledProbability selectedBox |
 	nonemptyBoxes := boxes reject: [ :box | box isEmpty ].
@@ -115,7 +123,7 @@ FlashcardsLeitnerSystem >> selectRandomBox [
 { #category : #public }
 FlashcardsLeitnerSystem >> selectRandomCard [
 	self selectRandomBox.
-	selectedCard := (boxes at: selectedBoxNumber) takeRandomCard.
+	^selectedCard := (boxes at: selectedBoxNumber) takeRandomCard.
 ]
 
 { #category : #accessing }

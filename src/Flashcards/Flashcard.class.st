@@ -35,6 +35,16 @@ Flashcard >> initializeWord: aWord translation: aTranslation [
 	translation := aTranslation.
 ]
 
+{ #category : #printing }
+Flashcard >> printOn: aStream [
+	"Append a sequence of characters to aStream that identify the receiver."
+
+	super printOn: aStream.
+	aStream
+		nextPutAll: ' word: ';
+		print: word
+]
+
 { #category : #accessing }
 Flashcard >> translation [
 	^ translation
