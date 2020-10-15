@@ -77,7 +77,7 @@ FlashcardsLeitnerSystem >> moveSelectedCardForward [
 		ifTrue: [ selectedBoxNumber ]
 		ifFalse: [ selectedBoxNumber + 1].
 		
-	(boxes at: selectedBoxNumber) addCard: selectedCard.
+	(boxes at: nextBoxNumber) addCard: selectedCard.
 ]
 
 { #category : #accessing }
@@ -115,7 +115,7 @@ FlashcardsLeitnerSystem >> selectRandomBox [
 	
 	selectedBox := nonemptyBoxes detect: [ :box |
 		scaledProbability := (boxCumulativeProbabilities at: box) * scalingCoefficient.
-		randomNumber <= scaledProbability ].
+		randomNumber <= scaledProbability ] ifNone: [ nonemptyBoxes first ].
 	
 	selectedBoxNumber := boxes indexOf: selectedBox.
 ]
