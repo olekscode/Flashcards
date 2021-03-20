@@ -38,8 +38,6 @@ FlashcardsLeitnerSystem >> boxes [
 FlashcardsLeitnerSystem >> initialize [ 
 	super initialize.
 	random := Random new.
-	boxes := OrderedCollection new.
-	boxCumulativeProbabilities := Dictionary new.
 	
 	self initializeDefaultProbabilities.
 ]
@@ -52,9 +50,12 @@ FlashcardsLeitnerSystem >> initializeDefaultProbabilities [
 { #category : #initialization }
 FlashcardsLeitnerSystem >> initializeProbabilities: aCollectionOfProbabilities [
 	| sum |
+	
+	boxes := OrderedCollection new.
 	aCollectionOfProbabilities size timesRepeat: [ boxes add: FlashcardBox new ].
 	
 	sum := 0.
+	boxCumulativeProbabilities := Dictionary new.
 	
 	aCollectionOfProbabilities withIndexDo: [ :probability :i |
 		sum := sum + probability.
@@ -64,7 +65,7 @@ FlashcardsLeitnerSystem >> initializeProbabilities: aCollectionOfProbabilities [
 { #category : #private }
 FlashcardsLeitnerSystem >> moveSelectedCardBackwards [
 	"This happens if the answer was wrong. The card is moved back to the first box"
-	boxes first add: selectedCard.
+	boxes first addCard: selectedCard.
 ]
 
 { #category : #private }
@@ -76,7 +77,7 @@ FlashcardsLeitnerSystem >> moveSelectedCardForward [
 		ifTrue: [ selectedBoxNumber ]
 		ifFalse: [ selectedBoxNumber + 1].
 		
-	(boxes at: selectedBoxNumber) addCard: selectedCard.
+	(boxes at: nextBoxNumber) addCard: selectedCard.
 ]
 
 { #category : #accessing }
@@ -90,6 +91,13 @@ FlashcardsLeitnerSystem >> processAnswer: anAnswer [
 	anAnswer = selectedCard translation
 		ifTrue: [ self moveSelectedCardForward ]
 		ifFalse: [ self moveSelectedCardBackwards ]
+]
+
+{ #category : #private }
+FlashcardsLeitnerSystem >> returnSelectedCard [
+	"Put the selected card back in case you can't answer and want to pause"
+	
+	(boxes at: selectedBoxNumber) addCard: selectedCard.
 ]
 
 { #category : #private }
@@ -107,7 +115,7 @@ FlashcardsLeitnerSystem >> selectRandomBox [
 	
 	selectedBox := nonemptyBoxes detect: [ :box |
 		scaledProbability := (boxCumulativeProbabilities at: box) * scalingCoefficient.
-		randomNumber <= scaledProbability ].
+		randomNumber <= scaledProbability ] ifNone: [ nonemptyBoxes first ].
 	
 	selectedBoxNumber := boxes indexOf: selectedBox.
 ]
@@ -115,12 +123,17 @@ FlashcardsLeitnerSystem >> selectRandomBox [
 { #category : #public }
 FlashcardsLeitnerSystem >> selectRandomCard [
 	self selectRandomBox.
-	selectedCard := (boxes at: selectedBoxNumber) takeRandomCard.
+	^selectedCard := (boxes at: selectedBoxNumber) takeRandomCard.
 ]
 
 { #category : #accessing }
 FlashcardsLeitnerSystem >> selectedBox [
 	^ boxes at: selectedBoxNumber 
+]
+
+{ #category : #accessing }
+FlashcardsLeitnerSystem >> selectedBoxNumber [
+	^selectedBoxNumber 
 ]
 
 { #category : #accessing }
