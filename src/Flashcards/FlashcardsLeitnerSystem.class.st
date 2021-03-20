@@ -132,6 +132,11 @@ FlashcardsLeitnerSystem >> selectedBox [
 ]
 
 { #category : #accessing }
+FlashcardsLeitnerSystem >> selectedBoxNumber [
+	^selectedBoxNumber 
+]
+
+{ #category : #accessing }
 FlashcardsLeitnerSystem >> selectedCard [
 	^ selectedCard
 ]

@@ -41,8 +41,9 @@ Flashcard >> printOn: aStream [
 
 	super printOn: aStream.
 	aStream
-		nextPutAll: ' word: ';
-		print: word
+		nextPutAll: '(word: ';
+		print: word;
+		nextPut: $)
 ]
 
 { #category : #accessing }

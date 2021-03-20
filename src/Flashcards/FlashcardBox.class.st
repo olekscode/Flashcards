@@ -29,6 +29,17 @@ FlashcardBox >> numberOfCards [
 ]
 
 { #category : #'as yet unclassified' }
+FlashcardBox >> printOn: aStream [
+	"Append a sequence of characters to aStream that identify the receiver."
+
+	super printOn: aStream.
+	aStream
+		nextPutAll: '(cards: ';
+		print: self numberOfCards;
+		nextPut: $)
+]
+
+{ #category : #'as yet unclassified' }
 FlashcardBox >> takeRandomCard [
 	"Selects a random card, removes it from the box, and returns the selected card. This way the card is taken out of the box"
 	| selectedCard |
